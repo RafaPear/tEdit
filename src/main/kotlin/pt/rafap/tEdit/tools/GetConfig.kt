@@ -1,4 +1,4 @@
-package pt.isel.tools
+package pt.rafap.tEdit.tools
 
 import java.io.File
 import java.util.*

@@ -1,10 +1,18 @@
-import pt.isel.datastore.Colors
+import pt.rafap.tEdit.datastore.Colors.stylize
+import pt.rafap.tEdit.datastore.Cursor
+import pt.rafap.tEdit.logger.Logger
+import pt.rafap.tEdit.logger.Severity
+import pt.rafap.tEdit.tools.RESET
 import pt.rafap.tEdit.tools.isRunningInTerminal
 import pt.rafap.tEdit.tools.openExternalTerminal
 
 fun main() {
     openExternalTerminal()
     if (!isRunningInTerminal()) return
-    val sequence = listOf("RED", "BOLD", "UNDERLINE")
-    print("${Colors.make(sequence)}HELLO WORLD${Colors["RESET"]}")
+    Logger.log("This is a test message", Severity.INFO)
+    Cursor.show()
+    Cursor.resetPos()
+    while (true) {
+
+    }
 }

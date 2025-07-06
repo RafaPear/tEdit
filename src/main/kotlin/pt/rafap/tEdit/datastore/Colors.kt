@@ -1,28 +1,33 @@
-package pt.isel.datastore
+package pt.rafap.tEdit.datastore
 
-import pt.isel.tools.ESC
-import pt.isel.tools.GetConfig
-import pt.isel.tools.RESET
+import pt.rafap.tEdit.tools.ESC
+import pt.rafap.tEdit.tools.GetConfig
+import pt.rafap.tEdit.tools.RESET
 import java.io.File
 
 object Colors {
     operator fun get(name: String): String {
         return config[name]?.toString() ?: ""
     }
-    val config = GetConfig(File("config/codes.properties"))
+
+    val config = GetConfig(File("config/colors.properties"))
 
     fun make(list: List<String>): String {
-        val sb = StringBuilder()
-        for (i in list){
-            val code = config[i]
-            if (code != null) {
-                sb.append("${ESC}[${code}m")
-            }
+        val l = mutableListOf<String>()
+        for (i in list) {
+            if (i.isEmpty()) continue
+            l += "$ESC${i}"
         }
-        return sb.toString()
+        return l.joinToString("")
     }
 
     fun String.stylize(list: List<String>): String {
-        return make(list) + this + RESET
+        val prefix = make(list)
+        val suffix = RESET
+        return prefix + this + suffix
+    }
+
+    fun String.stylize(name: String): String {
+        return this.stylize(listOf(name))
     }
 }

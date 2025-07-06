@@ -1,1 +1,1 @@
-package pt.isel.tools
+package pt.rafap.tEdit.tools

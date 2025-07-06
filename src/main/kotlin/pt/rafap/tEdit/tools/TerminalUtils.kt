@@ -1,7 +1,7 @@
 package pt.rafap.tEdit.tools
 
-import pt.isel.logger.Logger
-import pt.isel.logger.Severity
+import pt.rafap.tEdit.logger.Logger
+import pt.rafap.tEdit.logger.Severity
 import pt.rafap.tEdit.ext.RawConsoleInput
 import java.nio.file.Paths
 
@@ -10,6 +10,7 @@ fun openExternalTerminal(): Boolean {
     RawConsoleInput.resetConsoleMode()
     if (isRunningInTerminal()) {
         Logger.log("Cannot open terminal from within a terminal session.", Severity.ERROR)
+        return false
     }
     val javaHome = System.getProperty("java.home")
     val javaBin = Paths.get(javaHome, "bin", "java").toString()

@@ -1,12 +1,12 @@
-package pt.isel.logger
+package pt.rafap.tEdit.logger
 
-import pt.isel.datastore.Colors
-import pt.isel.tools.ESC
+import pt.rafap.tEdit.datastore.Colors
+import pt.rafap.tEdit.tools.ESC
 
 enum class Severity(val level: Int, val color: String, val title: String) {
-    INFO(1, "$ESC${Colors["GREEN"]}", "INFO: "), // Green
-    WARNING(2, "$ESC${Colors["YELLOW"]}", "WARNING: "), // Yellow
-    ERROR(3, "$ESC${Colors["RED"]}", "ERROR: "), // Red
-    CRITICAL(4, "$ESC${Colors["MAGENTA"]}", "CRITICAL: "), // Magenta
-    DEBUG(5,"$ESC${Colors["BLUE"]}","DEBUG: " ), // Blue
+    DEBUG(0, Colors["BLUE"], "DEBUG: "),
+    INFO(1, Colors["GREEN"], "INFO: "),
+    WARNING(2, Colors["YELLOW"], "WARNING: "),
+    ERROR(3, Colors["RED"], "ERROR: "),
+    CRITICAL(4, Colors["MAGENTA"], "CRITICAL: ");
 }

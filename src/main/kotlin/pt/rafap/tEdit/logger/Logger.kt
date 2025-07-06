@@ -1,7 +1,8 @@
-package pt.isel.logger
+package pt.rafap.tEdit.logger
 
-import pt.isel.datastore.Colors
-import pt.isel.tools.ESC
+import pt.rafap.tEdit.datastore.Colors
+import pt.rafap.tEdit.datastore.Colors.stylize
+import pt.rafap.tEdit.tools.ESC
 
 object Logger {
     private val log = StringBuilder()
@@ -10,7 +11,7 @@ object Logger {
 
     fun log(message: String, sev: Severity = Severity.INFO) {
         if (sev.level < this.severity.level) return
-        println("$ESC${sev.color}$message${ESC}${Colors["RESET"]}")
+        println("${sev.title}$message".stylize(sev.color))
         log.append(message).append("\n")
     }
 
