@@ -25,6 +25,7 @@ class MenuTree(
 
     fun make(){
         root.make()
+        root.updatePositionsRecursive()
     }
 
     fun display(){
