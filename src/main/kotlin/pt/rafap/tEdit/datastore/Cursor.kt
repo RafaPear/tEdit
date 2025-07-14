@@ -1,61 +1,128 @@
 package pt.rafap.tEdit.datastore
 
-import com.sun.tools.javac.code.TypeAnnotationPosition.field
+import pt.rafap.tEdit.datatype.ConfigReader
+import pt.rafap.tEdit.datatype.CursorPosition
 import pt.rafap.tEdit.tools.ESC
-import pt.rafap.tEdit.tools.GetConfig
+import pt.rafap.tEdit.tools.getTerminalSize
 import java.io.File
 
 object Cursor {
-    private data class CursorPosition(var x: Int = 0, var y: Int = 0){
-        override fun toString(): String {
-            return "CursorPosition(x=$x, y=$y)"
-        }
-    }
-    private var cPos  = CursorPosition(0, 0)
+    private var cPos  = CursorPosition()
     private var tcPos = cPos
 
     private var x: Int
         get() = cPos.x
-        set(value) { cPos.x = value }
+        set(value) {
+            var temp = value
+            if (temp == -1) temp = bounds.second
+            if (temp <= 1) temp = 1
+            temp %= (bounds.second + 1)
+            cPos.x = temp
+        }
 
     private var y: Int
         get() = cPos.y
-        set(value) { cPos.y = value }
+        set(value) {
+            var temp = value
+            if (temp == -1) temp = bounds.first
+            if (temp <= 1) temp = 1
+            temp %= (bounds.first + 1)
+            cPos.y = temp
+        }
 
-    var isVisible: Boolean = true
+    var isVisible: Boolean = false
+        set(value) {
+            field = value
+            if (value) {
+                print("${ESC}?25h") // Show cursor
+            } else {
+                print("${ESC}?25l") // Hide cursor
+            }
+        }
     var style = "0 q"
         set(value) {
             field = value
             print("${ESC}${field}") // Set cursor style
         }
 
+    val bounds
+        get() = getTerminalSize()
 
     init {
         try {
             val configFile = File("config/cursor.properties")
-            val properties = GetConfig(configFile)
+            val properties = ConfigReader(configFile)
             style = properties["style"].toString()
         }
         catch (e: Exception) {
             println("Error loading cursor configuration: ${e.message}")
         }
         print("${ESC}${style}")
+        print("${ESC}=7h")
+        isVisible = false
+        bounds
     }
 
     fun resetPos() {
-        x = 0
-        y = 0
+        x = 1
+        y = 1
         print("${ESC}H")
     }
 
-    fun setPos(newX: Int, newY: Int) {
+    fun setPos(newX: Int = x, newY: Int = y) {
         x = newX
         y = newY
-        print("${ESC}${newY};${newX}H")
+        print("${ESC}${y};${x}H")
     }
 
-    fun getPos(): Pair<Int, Int> {
-        return Pair(x, y)
+    fun addToX(dx: Int) {
+        x += dx
+    }
+
+    fun addToY(dy: Int) {
+        y += dy
+    }
+
+    fun addToPos(dx: Int, dy: Int) {
+        addToX(dx)
+        addToY(dy)
+        updateSavedPos()
+    }
+
+    private fun calculateNewY(msg: Any?): Int {
+        val size = msg.toString().replace(Regex("\u001B\\[[\\d;]*[^\\d;]"),"").length
+        val width = bounds.second
+        return if (x + size > width) {
+            size / width + if (size % width == 0) 0 else 1
+        } else 0
+    }
+
+    fun doPrt(msg: Any?){
+        val dy = calculateNewY(msg) + msg.toString().count { it == '\n' }
+        val size = msg.toString().replace(Regex("\u001B\\[[\\d;]*[^\\d;]"),"").length
+        if (msg.toString().contains('\n'))
+            goToNextLineStart(dy)
+        else
+            addToPos(size, dy)
+    }
+
+    fun setPos(newPos: CursorPosition) {
+        x = newPos.x
+        y = newPos.y
+        print("${ESC}${y};${x}H")
+    }
+
+    fun getPos(): CursorPosition {
+        return CursorPosition(x, y)
+    }
+
+    fun updatePos(newX: Int, newY: Int) {
+        x = newX
+        y = newY
+    }
+
+    fun updateSavedPos() {
+        setPos(CursorPosition(x, y))
     }
 
     fun move(dx: Int, dy: Int) {
@@ -64,60 +131,42 @@ object Cursor {
         setPos(x, y)
     }
 
-    fun moveUp(lines: Int) {
+    fun moveUp(lines: Int = 1) {
         y -= lines
-        if (y < 0) y = 0
         print("${ESC}${y}A") // Move cursor up
     }
 
-    fun moveDown(lines: Int) {
+    fun moveDown(lines: Int = 1) {
         y += lines
-        print("${ESC}${y}B") // Move cursor up
+        print("${ESC}${lines}B") // Move cursor down
     }
 
-    fun moveRight(cols: Int) {
+    fun moveRight(cols: Int = 1) {
         x -= cols
-        if (x < 0) x = 0
-        print("${ESC}${x}C") // Move cursor up
+        print("${ESC}${cols}C") // Move cursor right
     }
 
-    fun moveLeft(cols: Int) {
+    fun moveLeft(cols: Int = 1) {
         x += cols
-        print("${ESC}${x}D") // Move cursor up
+        print("${ESC}${cols}D") // Move cursor left
     }
 
     fun goToNextLineStart(lines: Int = 1) {
         y += lines
-        x = 0
-        print("${ESC}${y}E") // Move cursor to the start of the next line
+        x = 1
+        updateSavedPos()
     }
 
     fun goToPrevLineStart(lines: Int = 1) {
         y -= lines
-        x = 0
-        print("${ESC}${y}E") // Move cursor to the start of the next line
+        x = 1
+        updateSavedPos()
     }
 
     fun moveToColumn(col: Int) {
-        if (col < 0) return
+        if (col <= 0) return
         x = col
         print("${ESC}${x}G") // Move cursor to the specified column in the current line
-    }
-
-    fun requestCursorPosition(): Pair<Int, Int> {
-        print("${ESC}6n") // Request cursor position
-        val response = StringBuilder()
-        while (true) {
-            val char = System.`in`.read()
-            if (char == -1 || char == 0x1B) break // End of input or escape character
-            response.append(char.toChar())
-        }
-        val position = response.toString().substringAfter('[').split(';')
-        return if (position.size == 2) {
-            Pair(position[0].toIntOrNull() ?: 0, position[1].toIntOrNull() ?: 0)
-        } else {
-            Pair(0, 0) // Default to (0, 0) if parsing fails
-        }
     }
 
     fun moveLineUp(){
@@ -131,20 +180,6 @@ object Cursor {
 
     fun restoreFromBuffer() {
         cPos = tcPos
-        print("${ESC}${cPos.y};${cPos.x}H") // Restore cursor position
-    }
-
-    fun show() {
-        if (!isVisible) {
-            print("${ESC}?25h") // Show cursor
-            isVisible = true
-        }
-    }
-
-    fun hide() {
-        if (isVisible) {
-            print("${ESC}?25l") // Hide cursor
-            isVisible = false
-        }
+        updateSavedPos()
     }
 }

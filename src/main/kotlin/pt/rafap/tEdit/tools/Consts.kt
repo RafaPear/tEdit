@@ -1,9 +1,8 @@
 package pt.rafap.tEdit.tools
 
-import pt.rafap.tEdit.datastore.Colors
+import pt.rafap.tEdit.datatype.ConfigReader
 import java.io.File
 
-private val config = GetConfig(File("config/codes.properties"))
+val codes = ConfigReader(File("config/codes.properties"))
 
-val ESC = config["ESC"] // Default CSI escape sequence
-val RESET = Colors["RESET"] // Default reset code
+val ESC = codes["ESC"] // Default CSI escape sequence
