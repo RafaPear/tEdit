@@ -13,7 +13,11 @@ fun main() {
     Logger.severity = Severity.INFO
     val tree = MenuTree("Test Menu")
 
-    val file = MenuNode("File")
+    val file = MenuNode("File") .apply {
+        onRun = {
+            Logger.log("File menu selected", Severity.INFO)
+        }
+    }
     val edit = MenuNode("Edit")
     val view = MenuNode("View")
 
@@ -25,21 +29,21 @@ fun main() {
         }
     }
 
-    val hello = MenuNode("Hello")
+    val hello = MenuNode("Hellooooo")
 
     val test = MenuNode("Bueda fixe")
     val test2 = MenuNode("Test2")
     val test3 = MenuNode("Test3")
     val test4 = MenuNode("Test4")
 
-    hello.addChild(test)
-    hello.addChild(test2)
+    file.addChild(exit)
+    file.addChild(hello)
 
     exit.addChild(test3)
     exit.addChild(test4)
 
-    file.addChild(exit)
-    file.addChild(hello)
+    hello.addChild(test)
+    hello.addChild(test2)
 
     tree.addChild(edit)
     tree.addChild(file)

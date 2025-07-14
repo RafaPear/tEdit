@@ -1,10 +1,14 @@
 package pt.rafap.tEdit.topbar
 
+import jdk.internal.vm.ThreadContainers.root
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
 import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
+import org.jline.terminal.Size
+import pt.rafap.tEdit.datastore.Colors.stylize
 import pt.rafap.tEdit.datastore.Cursor
 import pt.rafap.tEdit.tui.TUI
 import pt.rafap.tEdit.typeExt.center
+import java.awt.Menu
 import kotlin.math.max
 
 open class MenuNode(
@@ -13,25 +17,10 @@ open class MenuNode(
     var parent: MenuNode? = null,
     var index: Int = -1,
 ) {
-    private val append get() = if (children.isEmpty()) "" else "_"
-    val title get() =
-        if(level>0) {
-            val msg = " $menuTitle$append"
-            if (maxSize == 0) maxSize = msg.length + 2
-            msg.padEnd(maxSize)
-        }
-        else {
-            val msg = "$menuTitle$append"
-            if (maxSize == 0) maxSize = msg.length + 2
-            msg.padEnd(maxSize)
-        }
-
+    val title get() = menuTitle
     val level: Int
         get() = parent?.level?.plus(1) ?: 0
-    val size: Int
-        get() = title.length // +2 for the spaces on each side
-
-    var maxSize: Int = 0
+    var size: Int = title.length + 2
 
     var isOpen: Boolean = false
     var selected: Boolean = false
@@ -46,7 +35,7 @@ open class MenuNode(
     // Listener for when the menu is run
     var onRun: (() -> Unit) = {}
 
-    var childBuffer: MutableList<MenuNode> = mutableListOf()
+    var childBufer: MutableList<MenuNode> = mutableListOf()
 
     val colors
         get() = if (selected) {
@@ -55,24 +44,38 @@ open class MenuNode(
             listOf(fgColor, bgColor, effect)
         }
 
+    fun maxChildCount(): Int {
+        if (children.isEmpty()) return 0
+        var maxCount = 0
+        for (child in children) {
+            val childCount = child.children.size
+            if (childCount > maxCount) {
+                maxCount = childCount
+            }
+        }
+        return maxCount
+    }
+
     fun findMaxSize(): Int {
-        var maxSize = this.maxSize
-        for (child in childBuffer) {
+        var maxSize = 0
+        if (level < 2 && level > 0) {
+            maxSize = size
+        }
+        for (child in children) {
             val childSize = child.size
             if (childSize > maxSize) {
                 maxSize = childSize
             }
         }
-        for (child in childBuffer) {
-            child.maxSize = maxSize
+        for (child in children) {
+            child.size = maxSize
         }
-        this.maxSize = maxSize
         return maxSize
     }
 
     fun updatePosition(reset: Boolean = false) {
         val parentPos = parent?.pos ?: Pair(1, 1)
-        val size = parent?.maxSize ?: 0
+        val size = parent?.size ?: 0
 
         val list = (parent?.children ?: mutableListOf()).toMutableList()
         if (!list.isEmpty()) list.remove(this)
@@ -82,7 +85,7 @@ open class MenuNode(
             val y = parentPos.second + 1
             if (!list.isEmpty()) {
                 val last = list.last()
-                x = last.maxSize + last.pos.first
+                x = last.size + last.pos.first
             }
             pos = Pair(x, y)
             return
@@ -97,7 +100,7 @@ open class MenuNode(
             return
         }
         else if (level > 2) {
-            val x = parentPos.first + size
+            val x = parentPos.first + size - 1
             var y = parentPos.second
             if (!list.isEmpty()) {
                 val last = list.last()
@@ -111,16 +114,17 @@ open class MenuNode(
 
     fun addChild(child: MenuNode) {
         child.parent = this
-        childBuffer += child
+        childBufer += child
     }
 
     fun make(){
-
-        updatePosition()
-        findMaxSize()
-        updatePosition()
-        for (child in childBuffer) {
+        for (child in childBufer) {
             children.add(child)
+            if (level > 0) {
+                child.size = findMaxSize()
+                findMaxSize()
+            }
+            child.updatePosition()
             child.make()
         }
     }
@@ -132,6 +136,9 @@ open class MenuNode(
             mutableListOf(fgColor, bgColor, effect)
         }
         Cursor.setPos(pos.first, pos.second)
-        TUI.print(title, colors)
+        if (level > 1)
+            TUI.print(title.padEnd(size-1), colors)
+        else
+            TUI.print(title.center(size), colors)
     }
 }

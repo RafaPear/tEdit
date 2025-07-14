@@ -43,7 +43,6 @@ class MenuTree(
                 TUI.clearLine()
             }
         }
-        Thread.sleep(200)
     }
 
     fun displayChildren(root: MenuNode? = this.root, deleteEmpty: Boolean = false) {
