@@ -1,10 +1,7 @@
 package pt.rafap.tEdit.topbar
 
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
-import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import pt.rafap.tEdit.datastore.Cursor
 import pt.rafap.tEdit.tui.TUI
-import pt.rafap.tEdit.typeExt.center
 import kotlin.math.max
 
 open class MenuNode(
@@ -55,16 +52,22 @@ open class MenuNode(
             listOf(fgColor, bgColor, effect)
         }
 
+    private val baseTitleLength: Int
+        get() = if (level > 0) {
+            " $menuTitle$append".length
+        } else {
+            "$menuTitle$append".length
+        }
+
     fun findMaxSize(): Int {
-        var maxSize = this.maxSize
-        for (child in childBuffer) {
-            val childSize = child.size
-            if (childSize > maxSize) {
-                maxSize = childSize
+        var maxSize = baseTitleLength
+        for (child in children) {
+            if (child.maxSize > maxSize) {
+                maxSize = child.maxSize
             }
         }
-        for (child in childBuffer) {
-            child.maxSize = maxSize
+        for (child in children) {
+            child.maxSize = max(child.maxSize, maxSize)
         }
         this.maxSize = maxSize
         return maxSize
@@ -114,14 +117,17 @@ open class MenuNode(
         childBuffer += child
     }
 
-    fun make(){
-
-        updatePosition()
-        findMaxSize()
-        updatePosition()
+    fun make() {
         for (child in childBuffer) {
+            child.parent = this
             children.add(child)
             child.make()
+        }
+
+        findMaxSize()
+        updatePosition()
+        for (child in children) {
+            child.updatePosition()
         }
     }
 
