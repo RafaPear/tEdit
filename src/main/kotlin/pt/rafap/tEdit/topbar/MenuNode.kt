@@ -1,10 +1,7 @@
 package pt.rafap.tEdit.topbar
 
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
-import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import pt.rafap.tEdit.datastore.Cursor
 import pt.rafap.tEdit.tui.TUI
-import pt.rafap.tEdit.typeExt.center
 import kotlin.math.max
 
 open class MenuNode(
@@ -46,7 +43,6 @@ open class MenuNode(
     // Listener for when the menu is run
     var onRun: (() -> Unit) = {}
 
-    var childBuffer: MutableList<MenuNode> = mutableListOf()
 
     val colors
         get() = if (selected) {
@@ -55,72 +51,56 @@ open class MenuNode(
             listOf(fgColor, bgColor, effect)
         }
 
-    fun findMaxSize(): Int {
-        var maxSize = this.maxSize
-        for (child in childBuffer) {
-            val childSize = child.size
-            if (childSize > maxSize) {
-                maxSize = childSize
-            }
-        }
-        for (child in childBuffer) {
-            child.maxSize = maxSize
-        }
-        this.maxSize = maxSize
-        return maxSize
+    private fun computeSizes() {
+        for (child in children) child.computeSizes()
+        var m = size
+        for (child in children) m = max(m, child.maxSize)
+        maxSize = m
+        for (child in children) child.maxSize = maxSize
     }
 
-    fun updatePosition(reset: Boolean = false) {
-        val parentPos = parent?.pos ?: Pair(1, 1)
-        val size = parent?.maxSize ?: 0
-
-        val list = (parent?.children ?: mutableListOf()).toMutableList()
-        if (!list.isEmpty()) list.remove(this)
-
-        if (level == 1) {
-            var x = 1
-            val y = parentPos.second + 1
-            if (!list.isEmpty()) {
-                val last = list.last()
-                x = last.maxSize + last.pos.first
+    private fun computePositions() {
+        when (level) {
+            0 -> {
+                pos = Pair(1, 1)
+                var x = 1
+                val y = pos.second + 1
+                for (child in children) {
+                    child.pos = Pair(x, y)
+                    child.computePositions()
+                    x += child.maxSize
+                }
             }
-            pos = Pair(x, y)
-            return
-        } else if (level == 2) {
-            val x = parentPos.first
-            var y = parentPos.second + 1
-            if (!list.isEmpty()) {
-                val last = list.last()
-                y = last.pos.second + 1
+            1 -> {
+                var y = parent!!.pos.second + 1
+                val x = parent!!.pos.first
+                for (child in children) {
+                    child.pos = Pair(x, y)
+                    child.computePositions()
+                    y += 1
+                }
             }
-            pos = Pair(x, y)
-            return
+            else -> {
+                var y = parent!!.pos.second
+                val x = parent!!.pos.first + parent!!.maxSize
+                for (child in children) {
+                    child.pos = Pair(x, y)
+                    child.computePositions()
+                    y += 1
+                }
+            }
         }
-        else if (level > 2) {
-            val x = parentPos.first + size
-            var y = parentPos.second
-            if (!list.isEmpty()) {
-                val last = list.last()
-                y = last.pos.second + 1
-            }
-            pos = Pair(x, y)
-            return
-        }
-        pos = Pair(1, 1)
     }
 
     fun addChild(child: MenuNode) {
         child.parent = this
-        childBuffer += child
+        children += child
     }
 
     fun make(){
-
-        updatePosition()
-        findMaxSize()
-        updatePosition()
-        for (child in childBuffer) {
-            children.add(child)
+        computeSizes()
+        computePositions()
+        for (child in children) {
             child.make()
         }
     }
