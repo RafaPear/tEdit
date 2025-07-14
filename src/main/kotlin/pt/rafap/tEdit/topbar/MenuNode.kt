@@ -115,13 +115,23 @@ open class MenuNode(
     }
 
     fun make(){
-
-        updatePosition()
-        findMaxSize()
-        updatePosition()
         for (child in childBuffer) {
+            child.parent = this
             children.add(child)
             child.make()
+        }
+
+        findMaxSize()
+        updatePosition()
+        for (child in children) {
+            child.updatePositionRecursively()
+        }
+    }
+
+    private fun updatePositionRecursively() {
+        updatePosition()
+        for (child in children) {
+            child.updatePositionRecursively()
         }
     }
 
