@@ -1,7 +1,7 @@
-package pt.rafap.tEdit.datastore
+package pt.rafap.tui.datastore
 
-import pt.rafap.tEdit.datatype.ConfigReader
-import pt.rafap.tEdit.datatype.KeyCode
+import pt.rafap.tui.datatype.ConfigReader
+import pt.rafap.tui.datatype.KeyCode
 import java.io.File
 
 object KeyCodes {

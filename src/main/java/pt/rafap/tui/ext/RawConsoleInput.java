@@ -1,4 +1,4 @@
-package pt.rafap.tEdit.ext;// Copyright 2015 Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland
+package pt.rafap.tui.ext;// Copyright 2015 Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland
 // www.source-code.biz, www.inventec.ch/chdh
 //
 // This module is multi-licensed and may be used under the terms of any of the following licenses:

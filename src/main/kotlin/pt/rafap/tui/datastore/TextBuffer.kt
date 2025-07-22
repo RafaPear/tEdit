@@ -1,10 +1,9 @@
-package pt.rafap.tEdit.datastore
+package pt.rafap.tui.datastore
 
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
-import pt.rafap.tEdit.tui.TUI
+import pt.rafap.tui.TUI
 
 // Text Buffer using 2d array
-object TextBuffer {
+class TextBuffer {
     val size = calculateBufferSize()
     private val buffer = MutableList(size) { "" }
     private val cPos

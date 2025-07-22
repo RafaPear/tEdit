@@ -1,9 +1,9 @@
 
-import pt.rafap.tEdit.datastore.KeyCodes
-import pt.rafap.tEdit.logger.Logger
-import pt.rafap.tEdit.logger.Severity
-import pt.rafap.tEdit.tools.openTerminalIfNotRunning
-import pt.rafap.tEdit.tui.TUI
+import pt.rafap.tui.datastore.KeyCodes
+import pt.rafap.tui.logger.Logger
+import pt.rafap.tui.logger.Severity
+import pt.rafap.tui.tools.openTerminalIfNotRunning
+import pt.rafap.tui.TUI
 
 fun main(){
     openTerminalIfNotRunning()

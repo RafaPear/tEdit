@@ -1,13 +1,13 @@
-package pt.rafap.tEdit.datatype
+package pt.rafap.tui.datatype
 
-import pt.rafap.tEdit.logger.Logger
-import pt.rafap.tEdit.logger.Severity
+import pt.rafap.tui.logger.Logger
+import pt.rafap.tui.logger.Severity
 import java.io.File
 import java.util.*
 
 class ConfigReader(val file: File) : Properties() {
-    operator fun get(key: String): Any? {
-        return super[key]
+    operator fun get(key: String): String {
+        return super[key].toString()
     }
 
     init {

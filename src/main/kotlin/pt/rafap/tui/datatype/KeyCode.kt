@@ -1,4 +1,4 @@
-package pt.rafap.tEdit.datatype
+package pt.rafap.tui.datatype
 
 data class KeyCode(val code: Int?) : Comparable<KeyCode> {
     override fun toString(): String {
@@ -23,8 +23,7 @@ data class KeyCode(val code: Int?) : Comparable<KeyCode> {
             this.code == null -> -1
             other.code == null -> 1
             this.code < other.code -> -1
-            this.code > other.code -> 1
-            else -> 0
+            else -> 1
         }
     }
 }

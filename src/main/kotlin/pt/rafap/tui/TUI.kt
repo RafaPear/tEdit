@@ -1,44 +1,44 @@
-package pt.rafap.tEdit.tui
+package pt.rafap.tui
 
-import pt.rafap.tEdit.datastore.Colors
-import pt.rafap.tEdit.datastore.Colors.stylize
-import pt.rafap.tEdit.datastore.Cursor
-import pt.rafap.tEdit.datastore.TextBuffer
-import pt.rafap.tEdit.datatype.ConfigReader
-import pt.rafap.tEdit.datatype.KeyCode
-import pt.rafap.tEdit.ext.RawConsoleInput
-import pt.rafap.tEdit.logger.Logger
-import pt.rafap.tEdit.logger.Severity
-import pt.rafap.tEdit.tools.ESC
-import pt.rafap.tEdit.tools.isRunningInTerminal
+import pt.rafap.tui.datastore.Color
+import pt.rafap.tui.datastore.Color.stylize
+import pt.rafap.tui.datastore.Cursor
+import pt.rafap.tui.datatype.ColorCode
+import pt.rafap.tui.datatype.ConfigReader
+import pt.rafap.tui.datatype.KeyCode
+import pt.rafap.tui.ext.RawConsoleInput
+import pt.rafap.tui.logger.Logger
+import pt.rafap.tui.logger.Severity
+import pt.rafap.tui.tools.ESC
+import pt.rafap.tui.tools.isRunningInTerminal
 import java.io.File
 import kotlin.system.exitProcess
 
 object TUI {
     val config = ConfigReader(File("config/tui.properties"))
 
-    var colorT = config["text"].toString()
-    var colorB = config["background"].toString()
+    var colorT = Color.WHITE
+    var colorB = Color.BG_BLACK
 
     var tempSize = Cursor.bounds
 
-    private var useBold: Boolean = config["useBold"].toString().toBoolean()
-    private val bold = if (useBold) Colors.BOLD else Colors.RESET_BOLD
+    private var useBold: Boolean = config["useBold"].toBoolean()
+    private val bold = if (useBold) Color.BOLD else Color.RESET_BOLD
 
-    var useFooter: Boolean = config["useFooter"].toString().toBoolean()
+    var useFooter: Boolean = config["useFooter"].toBoolean()
 
-    var useHeader: Boolean = config["useHeader"].toString().toBoolean()
+    var useHeader: Boolean = config["useHeader"].toBoolean()
 
     var footerSize: Int =
         try {
-            config["footerSize"].toString().toInt()
+            config["footerSize"].toInt()
         } catch (e: Exception) {
             1
         }
 
     var headerSize: Int =
         try {
-            config["headerSize"].toString().toInt()
+            config["headerSize"].toInt()
         } catch (e: Exception) {
             1
         }
@@ -85,7 +85,7 @@ object TUI {
         }
     }
 
-    private fun doPrtStyle(msg: Any?, codes: List<String> = emptyList()) {
+    private fun doPrtStyle(msg: Any?, codes: List<ColorCode> = emptyList()) {
         val newMsg = msg.toString().chunkedSequence(Cursor.bounds.second - Cursor.getPos().x + 1)
             .map { it.stylize(codes.ifEmpty { colors }) }
             .toList()
@@ -106,12 +106,12 @@ object TUI {
         }
     }
 
-    fun println(msg: Any? = "", codes: List<String> = emptyList()) {
+    fun println(msg: Any? = "", codes: List<ColorCode> = emptyList()) {
         doPrtStyle(msg.toString() + '\n', codes)
         updateIfNeeded()
     }
 
-    fun print(msg: Any?, codes: List<String> = emptyList()) {
+    fun print(msg: Any?, codes: List<ColorCode> = emptyList()) {
         doPrtStyle(msg, codes)
         updateIfNeeded()
     }
@@ -146,24 +146,22 @@ object TUI {
         simplePrint("${ESC}1K") // Clear from start of line to cursor
     }
 
-    fun writeFooter(msg: String, codes: List<String> = emptyList(), x: Int = 1, y: Int = Cursor.bounds.first) {
+    fun writeFooter(msg: String, codes: List<ColorCode> = emptyList(), x: Int = 1, y: Int = Cursor.bounds.first) {
         if (!useFooter) return
         buffered = false
-        Cursor.saveToBuffer()
         Cursor.setPos(x, y)
         simplePrint(msg.stylize(codes.ifEmpty { colors }))
-        Cursor.restoreFromBuffer()
+        clearLineToEnd()
         buffered = true
         injectFunction()
     }
 
-    fun writeHeader(msg: String, codes: List<String> = emptyList()) {
+    fun writeHeader(msg: String, codes: List<ColorCode> = emptyList()) {
         if (!useHeader) return
         buffered = false
-        Cursor.saveToBuffer()
         Cursor.resetPos()
         simplePrint(msg.stylize(codes.ifEmpty { colors }))
-        Cursor.restoreFromBuffer()
+        clearLineToEnd()
         buffered = true
         injectFunction()
     }

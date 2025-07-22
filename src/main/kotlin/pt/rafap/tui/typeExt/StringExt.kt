@@ -1,8 +1,4 @@
-package pt.rafap.tEdit.typeExt
-
-import pt.rafap.tEdit.tools.ESC
-
-fun String.makeESCCode() = "$ESC$this"
+package pt.rafap.tui.typeExt
 
 fun String.center(width: Int, char: Char = ' '): String {
     return this

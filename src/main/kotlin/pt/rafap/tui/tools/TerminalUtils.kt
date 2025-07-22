@@ -1,12 +1,12 @@
-package pt.rafap.tEdit.tools
+package pt.rafap.tui.tools
 
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Wincon
-import pt.rafap.tEdit.ext.RawConsoleInput
-import pt.rafap.tEdit.logger.Logger
-import pt.rafap.tEdit.logger.Severity
+import pt.rafap.tui.ext.RawConsoleInput
+import pt.rafap.tui.logger.Logger
+import pt.rafap.tui.logger.Severity
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess

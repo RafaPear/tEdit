@@ -1,4 +1,4 @@
-package pt.rafap.tEdit.datatype
+package pt.rafap.tui.datatype
 
 data class CursorPosition(var x: Int = 1, var y: Int = 1){
     override fun toString(): String {

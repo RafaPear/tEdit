@@ -1,9 +1,9 @@
-package pt.rafap.tEdit.datastore
+package pt.rafap.tui.datastore
 
-import pt.rafap.tEdit.datatype.ConfigReader
-import pt.rafap.tEdit.datatype.CursorPosition
-import pt.rafap.tEdit.tools.ESC
-import pt.rafap.tEdit.tools.getTerminalSize
+import pt.rafap.tui.datatype.ConfigReader
+import pt.rafap.tui.datatype.CursorPosition
+import pt.rafap.tui.tools.ESC
+import pt.rafap.tui.tools.getTerminalSize
 import java.io.File
 
 object Cursor {
@@ -181,5 +181,11 @@ object Cursor {
     fun restoreFromBuffer() {
         cPos = tcPos
         updateSavedPos()
+    }
+
+    fun runWithoutChange(func: () -> Unit){
+        saveToBuffer()
+        func()
+        restoreFromBuffer()
     }
 }
