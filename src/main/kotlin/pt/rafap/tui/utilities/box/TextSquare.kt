@@ -3,14 +3,13 @@ package pt.rafap.tui.utilities.box
 import pt.rafap.tui.datastore.Color
 import pt.rafap.tui.datatype.TextBuffer
 
-class TextRectangle(
+class TextSquare(
     override val title: String = "",
-    val width: Int,
-    val height: Int,
-    style: BoxStyle
+    val size: Int = 10,
+    style: BoxStyle,
 ): TextBox {
     override var tb = TextBuffer(
-        makeRectangleBounds(width, height),
+        makeSquareBounds(size),
         style.fillChar,
         style.codes
     )
@@ -19,10 +18,15 @@ class TextRectangle(
 
     override fun update() {
         tb = TextBuffer(
-            makeRectangleBounds(width, height),
+            makeSquareBounds(size),
             ' ',
             listOf(Color.BLUE, Color.BG_WHITE)
         )
         box = Box(title, tb)
+    }
+
+    override fun refresh() {
+        update()
+        initialize()
     }
 }

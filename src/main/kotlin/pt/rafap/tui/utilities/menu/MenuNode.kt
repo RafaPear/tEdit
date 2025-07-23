@@ -3,8 +3,6 @@ package pt.rafap.tui.utilities.menu
 import pt.rafap.tui.TUI
 import pt.rafap.tui.datastore.Color
 import pt.rafap.tui.datastore.Cursor
-import pt.rafap.tui.logger.Logger
-import pt.rafap.tui.logger.Severity
 import pt.rafap.tui.typeExt.center
 
 class MenuNode(
@@ -182,7 +180,6 @@ class MenuNode(
     }
 
     fun display() {
-        Logger.log("Is Shown: $isShown | Level: $level | Title: $title", Severity.INFO)
         Cursor.setPos(pos.first, pos.second)
         if (!isShown) TUI.print(" ".padEnd(size), listOf(Color.BG_BLACK, Color.BLACK))
         //else if (prevOpen && !isOpen && level > 1) TUI.print(" ".padEnd(size), listOf(Color.BG_BLACK, Color.BLACK))

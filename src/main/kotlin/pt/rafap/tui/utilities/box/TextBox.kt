@@ -1,35 +1,27 @@
 package pt.rafap.tui.utilities.box
 
-import pt.rafap.tui.datastore.Color
 import pt.rafap.tui.datatype.TextBuffer
 
-class TextBox(
-    val title: String = "",
-    val size: Int = 10,
-) {
-    private var tb = TextBuffer(
-        makeSquareBounds(size),
-        ' ',
-        listOf(Color.BLUE, Color.BG_WHITE)
-    )
+interface TextBox {
+    val title: String
 
-    private var box = Box(title,tb)
+    var tb: TextBuffer
+
+    var box: Box
+
+    fun update()
 
     fun initialize() {
         box.display()
     }
 
-    fun update() {
-        tb = TextBuffer(
-            makeSquareBounds(size),
-            ' ',
-            listOf(Color.BLUE, Color.BG_WHITE)
-        )
-        box = Box(title, tb)
-    }
-
     fun refresh() {
         update()
         initialize()
+    }
+
+    fun clear() {
+        tb.clear()
+        box = Box(title, tb)
     }
 }

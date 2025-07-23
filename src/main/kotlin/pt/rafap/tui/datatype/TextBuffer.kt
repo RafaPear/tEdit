@@ -93,10 +93,27 @@ class TextBuffer(
         Cursor.resetPos()
     }
 
+    fun clear() {
+        for (i in 0 until height) {
+            for (j in 0 until width) {
+                buffer[i][j] = Entry(defaultChar, listOf(Color.BLACK, Color.BG_BLACK), false)
+            }
+        }
+        printUpdate()
+        x = left
+        y = top
+    }
+
     fun setChar(char: Char, printed: Boolean = false) {
         val (nX, nY) = posToIndex(x, y)
         buffer[nY][nX] = Entry(char, defaultCodes, printed)
         incX()
+    }
+
+    fun deleteChar() {
+        val (nX, nY) = posToIndex(x, y)
+        decX()
+        buffer[nY][nX] = Entry(defaultChar, defaultCodes, false)
     }
 
     fun posToIndex(x: Int, y: Int): Pair<Int, Int> {
@@ -106,13 +123,21 @@ class TextBuffer(
     }
 
     fun incX() {
-        if (x+1 >= right) {
+        if (x + 1 >= right) {
             incY()
         }
         x++
     }
 
-    fun incY() {
-        y++
+    fun decX() {
+        if (x - 1 < left) {
+            x = right - 1
+            decY()
+        }
+        else x--
     }
+
+    fun incY() { y++ }
+
+    fun decY() { y-- }
 }
