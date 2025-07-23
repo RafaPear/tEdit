@@ -1,6 +1,7 @@
 package pt.rafap.tui.logger
 
 import pt.rafap.tui.TUI
+import pt.rafap.tui.datastore.Cursor
 import pt.rafap.tui.datatype.ColorCode
 import java.io.File
 import java.time.LocalDateTime
@@ -12,7 +13,9 @@ object Logger {
     var severity = Severity.DEBUG
 
     var printFun: (String, List<ColorCode>) -> Unit = { message, codes ->
-        TUI.println(message,codes)
+        Cursor.runWithoutChange {
+            TUI.writeFooter(message,codes)
+        }
     }
 
     fun log(message: String, sev: Severity = Severity.INFO) {

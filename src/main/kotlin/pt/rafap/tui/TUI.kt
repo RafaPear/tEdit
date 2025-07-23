@@ -45,13 +45,10 @@ object TUI {
 
     private var isInjected: Boolean = false
 
-    var buffered: Boolean = true
-        get() = !isInjected || field
-
     var injectedFunctionExt: (() -> Unit) = {
         val prevFun = Logger.printFun
         Logger.printFun = { message, codes ->
-            writeHeader(message, codes)
+            writeFooter(message, codes)
         }
         // print debug stats as cursor pos, bounds, etc.
         Logger.log("Cursor Position: ${Cursor.getPos()} | Bounds: ${Cursor.bounds} | Logger Severity: ${Logger.severity.name}",
@@ -118,7 +115,6 @@ object TUI {
 
     private fun simplePrint(msg: Any?) {
         kotlin.io.print(msg.toString())
-        if (buffered) {}
     }
 
     fun clear() {
@@ -127,9 +123,9 @@ object TUI {
     }
 
     fun clearAll() {
-        Cursor.resetPos()
-        doPrtStyle("")
-        simplePrint("${ESC}J") // Clear entire screen
+        simplePrint("${ESC}0J") // Clear entire screen
+        simplePrint("${ESC}1J") // Clear entire screen
+        //Cursor.resetPos()
     }
 
     fun clearLine() {
@@ -148,21 +144,17 @@ object TUI {
 
     fun writeFooter(msg: String, codes: List<ColorCode> = emptyList(), x: Int = 1, y: Int = Cursor.bounds.first) {
         if (!useFooter) return
-        buffered = false
         Cursor.setPos(x, y)
         simplePrint(msg.stylize(codes.ifEmpty { colors }))
         clearLineToEnd()
-        buffered = true
         injectFunction()
     }
 
     fun writeHeader(msg: String, codes: List<ColorCode> = emptyList()) {
         if (!useHeader) return
-        buffered = false
         Cursor.resetPos()
         simplePrint(msg.stylize(codes.ifEmpty { colors }))
         clearLineToEnd()
-        buffered = true
         injectFunction()
     }
 

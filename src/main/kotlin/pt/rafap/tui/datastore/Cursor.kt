@@ -45,14 +45,29 @@ object Cursor {
             print("${ESC}${field}") // Set cursor style
         }
 
-    val bounds
-        get() = getTerminalSize()
+    val bounds: Pair<Int, Int>
+        get() = requestSize()
+
+    private var ptrBounds: Pair<Int, Int> = getTerminalSize()
+
+    private fun requestSize(): Pair<Int, Int> {
+        var tempSize = ptrBounds
+        if (lastSizeRequest + 50 < System.currentTimeMillis()) {
+            lastSizeRequest = System.currentTimeMillis()
+            tempSize = getTerminalSize()
+        }
+
+        ptrBounds = tempSize
+        return tempSize
+    }
+
+    private var lastSizeRequest = 0L
 
     init {
         try {
             val configFile = File("config/cursor.properties")
             val properties = ConfigReader(configFile)
-            style = properties["style"].toString()
+            style = properties["style"]
         }
         catch (e: Exception) {
             println("Error loading cursor configuration: ${e.message}")
@@ -142,12 +157,12 @@ object Cursor {
     }
 
     fun moveRight(cols: Int = 1) {
-        x -= cols
+        x += cols
         print("${ESC}${cols}C") // Move cursor right
     }
 
     fun moveLeft(cols: Int = 1) {
-        x += cols
+        x -= cols
         print("${ESC}${cols}D") // Move cursor left
     }
 
