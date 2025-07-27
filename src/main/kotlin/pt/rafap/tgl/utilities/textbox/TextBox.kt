@@ -16,7 +16,7 @@ interface TextBox {
 
     fun update() {
         box = type.handle(title, width, height, style)
-        box.update()
+        box.initialize()
     }
 
     fun clear() {
@@ -25,6 +25,10 @@ interface TextBox {
 
     fun display() {
         box.display()
+    }
+
+    fun rePrint() {
+        box.rePrint()
     }
 
     fun refresh() {

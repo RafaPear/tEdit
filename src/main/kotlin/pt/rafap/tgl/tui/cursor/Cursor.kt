@@ -6,29 +6,70 @@ import pt.rafap.tgl.tui.tools.getTerminalSize
 import java.io.File
 
 object Cursor {
-    private var cPos  = CursorPosition()
-    private var tcPos = cPos
 
+    // -------------------------
+    // Start defining Cursor Bounds
+    // -------------------------
+
+    // Maximum bounds for the cursor position
+    val bounds: Pair<Int, Int>
+        get() = requestSize()
+
+    // Minimum bounds for the cursor position
+    val minBounds: Pair<Int, Int>
+        get() = Pair(1, 1) // Minimum bounds for cursor position
+
+    // Terminal size is cached to avoid frequent system calls
+    private var ptrBounds: Pair<Int, Int> = getTerminalSize()
+
+    // Last time a size request was made
+    private var lastSizeRequest = 0L
+
+    // -------------------------
+    // Finished defining Cursor Bounds
+    // -------------------------
+
+    // -----------------------------
+    // Start defining Cursor Position
+    // -----------------------------
+
+    // Cursor Position Class
+    private var cPos  = CursorPosition() // Current Cursor Position
+    private var tcPos = cPos // Temporary Cursor Position
+
+    // Cursor X Position
     private var x: Int
         get() = cPos.x
         set(value) {
             var temp = value
             if (temp == -1) temp = bounds.second
-            if (temp <= 1) temp = 1
-            temp %= (bounds.second + 1)
+            if (temp <= minBounds.second)
+                temp = minBounds.second
+            temp %= (bounds.second)
             cPos.x = temp
         }
 
+    // Cursor Y Position
     private var y: Int
         get() = cPos.y
         set(value) {
             var temp = value
             if (temp == -1) temp = bounds.first
-            if (temp <= 1) temp = 1
-            temp %= (bounds.first + 1)
+            if (temp <= minBounds.first)
+                temp = minBounds.first
+            temp %= (bounds.first)
             cPos.y = temp
         }
 
+    // -----------------------------
+    // Finished defining Cursor Position
+    // -----------------------------
+
+    // -----------------------------
+    // Start defining Cursor Properties
+    // -----------------------------
+
+    //Cursor visibility
     var isVisible: Boolean = false
         set(value) {
             field = value
@@ -38,29 +79,17 @@ object Cursor {
                 print("${ESC}?25l") // Hide cursor
             }
         }
+
+    // Cursor Style
     var style = "0 q"
         set(value) {
             field = value
             print("${ESC}${field}") // Set cursor style
         }
 
-    val bounds: Pair<Int, Int>
-        get() = requestSize()
-
-    private var ptrBounds: Pair<Int, Int> = getTerminalSize()
-
-    private fun requestSize(): Pair<Int, Int> {
-        var tempSize = ptrBounds
-        if (lastSizeRequest + 50 < System.currentTimeMillis()) {
-            lastSizeRequest = System.currentTimeMillis()
-            tempSize = getTerminalSize()
-        }
-
-        ptrBounds = tempSize
-        return tempSize
-    }
-
-    private var lastSizeRequest = 0L
+    // -----------------------------
+    // Finished defining Cursor Properties
+    // -----------------------------
 
     init {
         try {
@@ -75,6 +104,17 @@ object Cursor {
         print("${ESC}=7h")
         isVisible = false
         bounds
+    }
+
+    private fun requestSize(): Pair<Int, Int> {
+        var tempSize = ptrBounds
+        if (lastSizeRequest + 50 < System.currentTimeMillis()) {
+            lastSizeRequest = System.currentTimeMillis()
+            tempSize = getTerminalSize()
+        }
+
+        ptrBounds = tempSize
+        return tempSize
     }
 
     fun resetPos() {

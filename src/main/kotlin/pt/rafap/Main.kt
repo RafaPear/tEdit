@@ -2,16 +2,16 @@ package pt.rafap
 import pt.rafap.tgl.tui.TUI
 import pt.rafap.tgl.tui.color.Color
 import pt.rafap.tgl.tui.tools.openTerminalIfNotRunning
-import pt.rafap.tgl.utilities.textbox.box.BoxStyle
-import pt.rafap.tgl.utilities.textbox.box.BoxType
-import pt.rafap.tgl.utilities.textbox.TextBox
-import pt.rafap.tgl.utilities.textbox.TextRectangle
 import pt.rafap.tgl.utilities.menu.MenuNode
 import pt.rafap.tgl.utilities.menu.MenuTree
+import pt.rafap.tgl.utilities.textbox.TextBox
+import pt.rafap.tgl.utilities.textbox.TextRectangle
+import pt.rafap.tgl.utilities.textbox.box.BoxStyle
+import pt.rafap.tgl.utilities.textbox.box.BoxType
 
 fun main() {
     openTerminalIfNotRunning()
-    TUI.injectedFunctionExt = { }
+    TUI.injectedFun = { }
 
     val STYLE = BoxStyle(listOf(Color.BLUE, Color.BG_WHITE))
     val TYPE  = BoxType.DYNAMIC_BOX
@@ -43,7 +43,7 @@ fun main() {
         textBox.clear()
         textBox = TextRectangle(
             " Test Square ",
-            10, 10,
+            20, 20,
             BoxType.FIXED_BOX, STYLE
         )
         textBox.refresh(); top.display()
@@ -61,7 +61,7 @@ fun main() {
         textBox.clear()
     }
     update.onRun = {
-        textBox.refresh(); top.display()
+        textBox.refresh(); top.refresh()
     }
 
     boxTest.addChild(squareTest)
@@ -82,6 +82,6 @@ fun main() {
     while (true) {
         TUI.updateIfNeeded { textBox.refresh() ; top.refresh() }
         val input = TUI.readKey()
-        top.handleInput(input)
+        top.inputHandler(input)
     }
 }

@@ -4,15 +4,17 @@ import pt.rafap.tgl.tui.TUI
 import pt.rafap.tgl.tui.cursor.Cursor
 import pt.rafap.tgl.tui.keyboard.Key
 import pt.rafap.tgl.tui.keyboard.KeyCode
+import pt.rafap.tgl.tui.logger.Logger
+import pt.rafap.tgl.tui.logger.Severity
 import pt.rafap.tgl.tui.typeExt.center
 
 // TODO Passar entrada de cores para MenuTree em vez de cada node ter a sua cor
 
 class MenuTree(
-    title: String,
-    color: MenuColor = MenuColor()
+    val title: String,
+    val color: MenuStyle = MenuStyle()
 ) {
-    private val root: MenuNode = MenuNode(title)
+    private var root: MenuNode = MenuNode(title)
 
     private val centeredTitle get() = root.title.center(Cursor.bounds.second, ' ')
 
@@ -21,30 +23,62 @@ class MenuTree(
     var onUpdate = { }
 
     init {
+        initialize()
+        Logger.log("MenuTree initialized with title: $title", Severity.INFO)
+    }
+
+    private fun initialize() {
+        root = MenuNode(title)
         root.isOpen = true
         root.colorPreset = color
+        current = root
+    }
+
+    fun setTitle(newTitle: String) {
+        root.title = newTitle
+    }
+
+    fun returnFromAll() {
+        while (current.level > 0) {
+            current = current.exit()
+        }
+        current.close()
+        displayChildren()
     }
 
     fun addChild(child: MenuNode) {
         root.addChild(child)
+        Logger.log("Added child: ${child.title} to root: ${root.title}", Severity.DEBUG)
     }
 
     fun make(){
         root.make()
+        Logger.log("Menu tree created with title: ${root.title}", Severity.INFO)
+    }
+
+    fun reset() {
+        initialize()
+        Logger.log("Menu tree reset to initial state", Severity.INFO)
     }
 
     fun refresh() {
-        Cursor.runWithoutChange {
-            TUI.writeHeader(centeredTitle, root.colors)
-            displayChildren(root = root)
-        }
-    }
-
-    fun display(){
+        Cursor.isVisible = false // Hide cursor while printing
         Cursor.runWithoutChange {
             TUI.writeHeader(centeredTitle, root.colors)
             displayChildren()
         }
+        Cursor.isVisible = true // Show cursor after printing
+        Logger.log("Menu tree refreshed", Severity.INFO)
+    }
+
+    fun display(){
+        Cursor.isVisible = false // Hide cursor while printing
+        Cursor.runWithoutChange {
+            TUI.writeHeader(centeredTitle, root.colors)
+            displayChildren()
+        }
+        Cursor.isVisible = true // Show cursor after printing
+        Logger.log("Menu tree displayed", Severity.INFO)
     }
 
     private fun deleteEmpty(root: MenuNode){
@@ -63,13 +97,13 @@ class MenuTree(
         }
     }
 
-    fun displayChildren(clear: Boolean = true, root: MenuNode = current) {
+    fun displayChildren(clear: Boolean = true) {
         if (clear) deleteEmpty(root)
         onUpdate()
         displayAll(root)
     }
 
-    fun handleInput(input: KeyCode) {
+    fun inputHandler(input: KeyCode) {
         when (input) {
             Key.LEFT, Key.DOWN -> { moveToPrevious(input) }
             Key.RIGHT, Key.UP  -> { moveToNext(input) }

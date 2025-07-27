@@ -12,6 +12,8 @@ object Logger {
 
     var severity = Severity.DEBUG
 
+    var print = false
+
     var printFun: (String, List<ColorCode>) -> Unit = { message, codes ->
         Cursor.runWithoutChange {
             TUI.writeFooter(message,codes)
@@ -24,8 +26,10 @@ object Logger {
             .now()
             .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
         val msg = "[${timestamp}] ${sev.title}$message"
-        printFun(msg, listOf(sev.color))
-        log.append(message).append("\n")
+
+        if (print) printFun(msg, listOf(sev.color))
+
+        log.append(msg).append("\n")
     }
 
     fun error(message: String) {
@@ -42,12 +46,10 @@ object Logger {
 
     fun writeToFile(filePath: String) {
         try {
-            File(filePath).apply {
-                parentFile?.mkdirs() // Ensure parent directories exist
-                createNewFile() // Create the file if it doesn't exist
-            }.printWriter().print(log.toString())
+            val file = File(filePath)
+            file.writeText(log.toString())
         } catch (e: Exception) {
-            log("Error writing log to file: ${e.message}", Severity.ERROR)
+            error("Failed to write log to file: ${e.message}")
         }
     }
 }

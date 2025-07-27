@@ -4,11 +4,10 @@ import pt.rafap.tgl.tui.TUI
 import pt.rafap.tgl.tui.color.Color
 import pt.rafap.tgl.tui.color.ColorCode
 import pt.rafap.tgl.tui.cursor.Cursor
-import kotlin.text.iterator
 
 // Text Buffer using 2d array
-class TextBuffer(
-    bounds: Bounds,
+data class TextBuffer(
+    val bounds: Bounds,
     val defaultChar: Char = ' ',
     val defaultCodes: List<ColorCode> = listOf(Color.WHITE, Color.BG_BLACK)
 ) {
@@ -31,8 +30,8 @@ class TextBuffer(
         var isPrinted: Boolean = false
     )
 
-    private var x: Int = left
-        set(value) {
+    var x: Int = left
+        private set(value) {
             var temp = value
             if (temp < left) temp = left
             temp %= right
@@ -40,8 +39,8 @@ class TextBuffer(
             field = temp
         }
 
-    private var y: Int = top
-        set(value) {
+    var y: Int = top
+        private set(value) {
             var temp = value
             if (temp < top) temp = top
             temp %= bottom
@@ -56,8 +55,28 @@ class TextBuffer(
             }
         }
 
+    var hasAltered = false
+        private set
+
     fun getBuffer(): Array<Array<Entry>> {
         return buffer
+    }
+
+    fun setBuffer(newBuffer: Array<Array<Entry>>) {
+        var rowCounter = 0
+        for (row in newBuffer) {
+            var tmpArr = Array (width) {
+                Entry(defaultChar, defaultCodes)
+            }
+            for (entry in row) {
+                tmpArr += entry
+            }
+            // set the temp str
+            buffer[rowCounter] = tmpArr
+            rowCounter++
+            if (rowCounter > height) break // Prevent overflow
+        }
+        hasAltered = true
     }
 
     fun print(text: String) {
@@ -79,10 +98,12 @@ class TextBuffer(
         for (c in text) {
             setChar(c)
         }
+        hasAltered = true
     }
 
-    fun printUpdate(codes: List<ColorCode> = defaultCodes) {
+    fun printUpdate(rePrint: Boolean = false, codes: List<ColorCode> = defaultCodes) {
         var tempY = top
+        var didPrint = false
         for (row in buffer) {
             var tmpStr = ""
             var needsPrinting = false
@@ -96,10 +117,20 @@ class TextBuffer(
             if (needsPrinting){
                 Cursor.setPos(left, tempY)
                 TUI.print(tmpStr, codes)
+                didPrint = true
+            } else if (rePrint) {
+                Cursor.setPos(left, tempY)
+                TUI.print(tmpStr, codes)
             }
             tempY++
         }
-        Cursor.resetPos()
+        if (didPrint) {
+            Cursor.runWithoutChange {
+                TUI.writeFooter("Cursor: ${x}, $y | Max: ${Cursor.bounds.second}, ${Cursor.bounds.first}")
+            }
+            Cursor.setPos(x, y)
+        }
+        hasAltered = false
     }
 
     fun clear() {
@@ -108,21 +139,25 @@ class TextBuffer(
                 buffer[i][j] = Entry(defaultChar, listOf(Color.BLACK, Color.BG_BLACK), false)
             }
         }
-        printUpdate(listOf(Color.BLACK, Color.BG_BLACK))
+        printUpdate(codes = listOf(Color.BLACK, Color.BG_BLACK))
         x = left
         y = top
+        hasAltered = false
     }
 
     fun setChar(char: Char, printed: Boolean = false) {
         val (nX, nY) = posToIndex(x, y)
         buffer[nY][nX] = Entry(char, defaultCodes, printed)
         incX()
+        hasAltered = true
     }
 
     fun deleteChar() {
-        val (nX, nY) = posToIndex(x, y)
+        if (x == left && y == top) return // No character to delete at the start
         decX()
+        val (nX, nY) = posToIndex(x, y)
         buffer[nY][nX] = Entry(defaultChar, defaultCodes, false)
+        hasAltered = true
     }
 
     fun posToIndex(x: Int, y: Int): Pair<Int, Int> {

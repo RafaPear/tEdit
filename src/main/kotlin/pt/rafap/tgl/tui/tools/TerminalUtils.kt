@@ -4,9 +4,9 @@ import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Wincon
+import pt.rafap.tgl.tui.keyboard.RawConsoleInput
 import pt.rafap.tgl.tui.logger.Logger
 import pt.rafap.tgl.tui.logger.Severity
-import pt.rafap.tgl.tui.keyboard.RawConsoleInput
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
@@ -64,7 +64,7 @@ fun getTerminalSize(): Pair<Int, Int> {
         final = final.copy(first = 1) // Default to 24 rows if size is zero
     if (final.second == 0)
         final = final.copy(second = 1) // Default to 80 columns if size is zero
-    return final
+    return final.first + 1 to final.second + 1
 }
 
 /** Abre uma nova janela de terminal a correr a aplicação actual. */

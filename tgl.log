@@ -1,0 +1,14 @@
+[26-07-2025 20:54:49] INFO: MenuTree initialized with title: TGL - Terminal Graphics Library
+[26-07-2025 20:54:49] INFO: Initializing Menu
+[26-07-2025 20:54:49] INFO: MenuTree initialized with title: TGL - Terminal Graphics Library
+[26-07-2025 20:54:49] DEBUG: Added child: System to root: TGL - Terminal Graphics Library
+[26-07-2025 20:54:49] DEBUG: Added child 'System' to 'TGL - Terminal Graphics Library' children at level 0
+[26-07-2025 20:54:49] DEBUG: Added child 'Exit' to 'System' children at level 1
+[26-07-2025 20:54:49] DEBUG: Added child 'Clear' to 'System' children at level 1
+[26-07-2025 20:54:49] DEBUG: Added child 'Refresh' to 'System' children at level 1
+[26-07-2025 20:54:49] DEBUG: Added child 'Help' to 'System' children at level 1
+[26-07-2025 20:54:49] DEBUG: Added child 'About' to 'System' children at level 1
+[26-07-2025 20:54:49] INFO: Menu tree created with title: TGL - Terminal Graphics Library
+[26-07-2025 20:54:49] INFO: Menu tree displayed
+[26-07-2025 20:54:49] INFO: Creating Threads
+[26-07-2025 20:54:49] INFO: Starting Threads

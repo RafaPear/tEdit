@@ -1,5 +1,6 @@
 package pt.rafap.tgl.utilities.textbox.box.textbuffer
 
+import pt.rafap.tgl.tui.TUI
 import pt.rafap.tgl.tui.cursor.Cursor
 
 class Bounds(
@@ -7,17 +8,23 @@ class Bounds(
     b: Int,
     l: Int,
     r: Int,
-    val hMax: Int = Cursor.bounds.first,
-    val vMax: Int = Cursor.bounds.second
+    vMax: Int = Cursor.bounds.first,
+    vMin: Int = Cursor.minBounds.first + 1,
+    hMax: Int = Cursor.bounds.second,
+    hMin: Int = Cursor.minBounds.second + 1
 ) {
-    val top: Int = parseHBound(t)
-    val bottom: Int = parseHBound(b)
-    val left: Int = parseVBound(l)
-    val right: Int = parseVBound(r)
+    private class Limits(val value: Int, val min: Int, val max: Int)
 
-    private fun parseHBound(value: Int): Int =
-        value.coerceIn(1, hMax)
+    private val tLim: Limits = Limits(t, TUI.headerSize + 2, vMax)
+    private val bLim: Limits = Limits(b, TUI.footerSize + 1, vMax)
+    private val lLim: Limits = Limits(l, hMin, hMax)
+    private val rLim: Limits = Limits(r, hMin, hMax)
 
-    private fun parseVBound(value: Int): Int =
-        value.coerceIn(1, vMax)
+    val top: Int = tLim.capValue()
+    val bottom: Int = bLim.capValue()
+    val left: Int = lLim.capValue()
+    val right: Int = rLim.capValue()
+
+    private fun Limits.capValue(): Int =
+        value.coerceIn(min, max)
 }

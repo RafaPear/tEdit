@@ -3,11 +3,13 @@ package pt.rafap.tgl.utilities.menu
 import pt.rafap.tgl.tui.TUI
 import pt.rafap.tgl.tui.color.Color
 import pt.rafap.tgl.tui.cursor.Cursor
+import pt.rafap.tgl.tui.logger.Logger
+import pt.rafap.tgl.tui.logger.Severity
 import pt.rafap.tgl.tui.typeExt.center
 
 class MenuNode(
-    val title: String,
-    color: MenuColor = MenuColor(),
+    var title: String,
+    color: MenuStyle = MenuStyle(),
     startIndex: Int = 0,
 ) {
     // Node children
@@ -55,7 +57,7 @@ class MenuNode(
         get() = parent?.isOpen ?: true
 
     // Colors
-    var colorPreset: MenuColor = parent?.colorPreset ?: color // Default Preset
+    var colorPreset: MenuStyle = parent?.colorPreset ?: color // Default Preset
     val colors
         get() = colorPreset[this]
 
@@ -172,6 +174,7 @@ class MenuNode(
     fun make() {
         for (child in childBuffer) {
             children.add(child)
+            Logger.log("Added child '${child.title}' to '${title}' children at level $level", Severity.DEBUG)
             if (level > 0) findMaxSize()
             child.updatePosition()
             child.make()

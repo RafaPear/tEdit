@@ -10,7 +10,7 @@ import kotlin.system.exitProcess
 
 fun main() {
     openTerminalIfNotRunning()
-    TUI.injectedFunctionExt = { }
+    TUI.injectedFun = { }
     Logger.severity = Severity.DEBUG
     Logger.printFun = { message, codes ->
         Cursor.runWithoutChange {
@@ -194,7 +194,7 @@ fun main() {
                 top.display()
             }
             else -> {
-                top.handleInput(input)
+                top.inputHandler(input)
             }
         }
     }

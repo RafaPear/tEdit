@@ -1,71 +1,35 @@
 package pt.rafap.tgl.tui
 
-import pt.rafap.tgl.tui.color.Color
 import pt.rafap.tgl.tui.color.Color.stylize
 import pt.rafap.tgl.tui.color.ColorCode
 import pt.rafap.tgl.tui.cursor.Cursor
 import pt.rafap.tgl.tui.keyboard.KeyCode
-import pt.rafap.tgl.tui.logger.Logger
-import pt.rafap.tgl.tui.logger.Severity
-import pt.rafap.tgl.tui.tools.ConfigReader
+import pt.rafap.tgl.tui.keyboard.RawConsoleInput
 import pt.rafap.tgl.tui.tools.ESC
 import pt.rafap.tgl.tui.tools.isRunningInTerminal
-import pt.rafap.tgl.tui.keyboard.RawConsoleInput
-import java.io.File
 import kotlin.system.exitProcess
 
 object TUI {
-    val config = ConfigReader(File("config/tui.properties"))
 
-    var colorT = Color.WHITE
-    var colorB = Color.BG_BLACK
+    var style: TuiStyle = TuiStyle() // Default style for TUI
 
-    var tempSize = Cursor.bounds
+    var lastUpdateSize = Cursor.bounds // Last known size of the terminal window
 
-    private var useBold: Boolean = config["useBold"].toBoolean()
-    private val bold = if (useBold) Color.BOLD else Color.RESET_BOLD
+    var footerSize: Int = 1 // Footer size in lines
+    var headerSize: Int = 1 // Header size in lines
 
-    var useFooter: Boolean = config["useFooter"].toBoolean()
+    var injectedFun: (() -> Unit) = { } // Function to be injected into the TUI, can be set by the user
 
-    var useHeader: Boolean = config["useHeader"].toBoolean()
+    private var isInjected: Boolean = false // Flag to check if the injected function has been called
 
-    var footerSize: Int =
-        try {
-            config["footerSize"].toInt()
-        } catch (e: Exception) {
-            1
-        }
-
-    var headerSize: Int =
-        try {
-            config["headerSize"].toInt()
-        } catch (e: Exception) {
-            1
-        }
-
-    private var isInjected: Boolean = false
-
-    var injectedFunctionExt: (() -> Unit) = {
-        val prevFun = Logger.printFun
-        Logger.printFun = { message, codes ->
-            writeFooter(message, codes)
-        }
-        // print debug stats as cursor pos, bounds, etc.
-        Logger.log("Cursor Position: ${Cursor.getPos()} | Bounds: ${Cursor.bounds} | Logger Severity: ${Logger.severity.name}",
-            Severity.DEBUG)
-        Logger.printFun = prevFun
-    }
-
+    // Function to inject the injectedFun only once per update
     private var injectFunction: () -> Unit = {
         if (!isInjected) {
             isInjected = true
-            injectedFunctionExt()
+            injectedFun()
         }
         isInjected = false
     }
-
-    val colors
-        get() = listOf(bold, colorT, colorB)
 
     init {
         if(!isRunningInTerminal()) exitProcess(0)
@@ -73,26 +37,36 @@ object TUI {
         Cursor.setPos(1, headerSize)
     }
 
+    /**
+     * Updates the TUI if the terminal size has changed.
+     * @param updateFunc Function to be called after updating the TUI.
+     */
     fun updateIfNeeded(updateFunc : () -> Unit = {}) {
-        if (tempSize != Cursor.bounds) {
+        if (lastUpdateSize != Cursor.bounds) {
             Thread.sleep(1)
             clearAll()
-            tempSize = Cursor.bounds
+            lastUpdateSize = Cursor.bounds
             updateFunc()
             injectFunction()
         }
     }
 
+    /**
+     * Prints a message to the TUI with the specified color codes.
+     * If the message is too long, it will be split into multiple lines.
+     * @param msg The message to print.
+     * @param codes The color codes to apply to the message.
+     */
     private fun doPrtStyle(msg: Any?, codes: List<ColorCode> = emptyList()) {
         val newMsg = msg.toString().chunkedSequence(Cursor.bounds.second - Cursor.getPos().x + 1)
             .map { it.stylize(codes) }
             .toList()
 
         for (c in newMsg) {
-            if (useFooter && Cursor.getPos().y == Cursor.bounds.first - footerSize + 1) {
+            if (Cursor.getPos().y == Cursor.bounds.first - footerSize) {
                 Cursor.setPos(newY = footerSize + 1) // Reset cursor position if at bottom
             }
-            if (useHeader && Cursor.getPos().y == headerSize) {
+            if (Cursor.getPos().y == headerSize) {
                 Cursor.setPos(newY = headerSize + 1) // Reset cursor position if at top
             }
             if (msg.toString().isEmpty()) {
@@ -104,16 +78,30 @@ object TUI {
         }
     }
 
+    /**
+     * Prints a message to the TUI with the specified color codes and a newline at the end.
+     * @param msg The message to print.
+     * @param codes The color codes to apply to the message.
+     */
     fun println(msg: Any? = "", codes: List<ColorCode> = emptyList()) {
         doPrtStyle(msg.toString() + '\n', codes)
         updateIfNeeded()
     }
 
+    /**
+     * Prints a message to the TUI without a newline at the end.
+     * @param msg The message to print.
+     * @param codes The color codes to apply to the message.
+     */
     fun print(msg: Any?, codes: List<ColorCode> = emptyList()) {
         doPrtStyle(msg, codes)
         updateIfNeeded()
     }
 
+    /**
+     * Prints a message to the TUI without any color codes.
+     * @param msg The message to print.
+     */
     private fun simplePrint(msg: Any?) {
         kotlin.io.print(msg.toString())
     }
@@ -125,7 +113,7 @@ object TUI {
 
     fun clearAll() {
         simplePrint("${ESC}0J") // Clear entire screen
-        simplePrint("${ESC}1J") // Clear entire screen
+        //simplePrint("${ESC}1J") // Clear entire screen
         //Cursor.resetPos()
     }
 
@@ -143,18 +131,16 @@ object TUI {
         simplePrint("${ESC}1K") // Clear from start of line to cursor
     }
 
-    fun writeFooter(msg: String, codes: List<ColorCode> = emptyList(), x: Int = 1, y: Int = Cursor.bounds.first) {
-        if (!useFooter) return
+    fun writeFooter(msg: String, codes: List<ColorCode> = emptyList(), x: Int = 1, y: Int = Cursor.bounds.first-1) {
         Cursor.setPos(x, y)
-        simplePrint(msg.stylize(codes.ifEmpty { colors }))
+        simplePrint(msg.stylize(codes.ifEmpty { style() }))
         clearLineToEnd()
         injectFunction()
     }
 
     fun writeHeader(msg: String, codes: List<ColorCode> = emptyList()) {
-        if (!useHeader) return
         Cursor.resetPos()
-        simplePrint(msg.stylize(codes.ifEmpty { colors }))
+        simplePrint(msg.stylize(codes.ifEmpty { style() }))
         clearLineToEnd()
         injectFunction()
     }

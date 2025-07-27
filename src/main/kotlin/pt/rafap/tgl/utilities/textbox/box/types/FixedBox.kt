@@ -1,9 +1,11 @@
-package pt.rafap.tgl.utilities.textbox.box
+package pt.rafap.tgl.utilities.textbox.box.types
 
+import pt.rafap.tgl.utilities.textbox.box.Box
+import pt.rafap.tgl.utilities.textbox.box.BoxStyle
 import pt.rafap.tgl.utilities.textbox.box.textbuffer.TextBuffer
-import pt.rafap.tgl.utilities.textbox.box.textbuffer.makeRectangleBounds
+import pt.rafap.tgl.utilities.textbox.box.textbuffer.makeCenteredRectangleBounds
 
-class DynamicBox(
+class FixedBox(
     override val title: String,
     override val width: Int,
     override val height: Int,
@@ -11,7 +13,7 @@ class DynamicBox(
 ): Box {
 
     override val tb: TextBuffer = TextBuffer(
-        makeRectangleBounds(width, height),
+        makeCenteredRectangleBounds(width, height),
         style.fillChar,
         style.codes
     )

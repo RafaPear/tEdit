@@ -13,7 +13,11 @@ interface Box {
         tb.printUpdate()
     }
 
-    fun update() {
+    fun rePrint() {
+        tb.printUpdate(true)
+    }
+
+    fun initialize() {
         val titleStartPos = tb.width / 2 - title.length / 2
         for (i in 0 until tb.height) {
             for (j in 0 until tb.width) {
@@ -27,13 +31,14 @@ interface Box {
 
     fun chooseChar(vPos: Int, hPos: Int): Char {
         return when {
-            isTopLeftCorner(vPos, hPos)     -> '┌'
-            isTopRightCorner(vPos, hPos)    -> '┐'
-            isBottomLeftCorner(vPos, hPos)  -> '└'
-            isBottomRightCorner(vPos, hPos) -> '┘'
-            isHorizontalBorder(vPos, hPos)  -> '─'
-            isVerticalBorder(vPos, hPos)    -> '│'
-            else                            -> ' '
+            !style.drawLines -> style.fillChar
+            isTopLeftCorner(vPos, hPos)     -> style.tLChar
+            isTopRightCorner(vPos, hPos)    -> style.tRChar
+            isBottomLeftCorner(vPos, hPos)  -> style.bLChar
+            isBottomRightCorner(vPos, hPos) -> style.bRChar
+            isHorizontalBorder(vPos, hPos)  -> style.hBChar
+            isVerticalBorder(vPos, hPos)    -> style.vBChar
+            else                            -> style.fillChar
         }
     }
 
